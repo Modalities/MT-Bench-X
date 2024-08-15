@@ -1,8 +1,13 @@
-from dataclasses import dataclass, field
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
 import os
+import sys
+from dataclasses import dataclass, field
 from os.path import isdir, isfile
 from pathlib import Path
-import sys
 
 from transformers import AutoTokenizer
 
@@ -11,9 +16,7 @@ from transformers import AutoTokenizer
 class GptqConfig:
     ckpt: str = field(
         default=None,
-        metadata={
-            "help": "Load quantized model. The path to the local GPTQ checkpoint."
-        },
+        metadata={"help": "Load quantized model. The path to the local GPTQ checkpoint."},
     )
     wbits: int = field(default=16, metadata={"help": "#bits to use for quantization"})
     groupsize: int = field(

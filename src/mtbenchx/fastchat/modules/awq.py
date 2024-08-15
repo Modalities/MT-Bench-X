@@ -1,18 +1,21 @@
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-import sys
 
 import torch
-from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM, modeling_utils
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, modeling_utils
 
 
 @dataclass
 class AWQConfig:
     ckpt: str = field(
         default=None,
-        metadata={
-            "help": "Load quantized model. The path to the local AWQ checkpoint."
-        },
+        metadata={"help": "Load quantized model. The path to the local AWQ checkpoint."},
     )
     wbits: int = field(default=16, metadata={"help": "#bits to use for quantization"})
     groupsize: int = field(
@@ -25,8 +28,8 @@ def load_awq_quantized(model_name, awq_config: AWQConfig, device):
     print("Loading AWQ quantized model...")
 
     try:
+        from tinychat.modules import make_fused_mlp, make_quant_attn, make_quant_norm
         from tinychat.utils import load_quant
-        from tinychat.modules import make_quant_norm, make_quant_attn, make_fused_mlp
     except ImportError as e:
         print(f"Error: Failed to import tinychat. {e}")
         print("Please double check if you have successfully installed AWQ")
@@ -34,9 +37,7 @@ def load_awq_quantized(model_name, awq_config: AWQConfig, device):
         sys.exit(-1)
 
     config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_name, use_fast=False, trust_remote_code=True
-    )
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False, trust_remote_code=True)
 
     def skip(*args, **kwargs):
         pass

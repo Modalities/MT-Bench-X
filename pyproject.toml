@@ -24,7 +24,7 @@ dev = [
 ]
 
 [project.scripts]
-synth = "mtbenchx.__main__:main"
+mtbenchx = "mtbenchx.__main__:main"
 
 [build-system]
 requires = ["setuptools >= 61.0.0"]

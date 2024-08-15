@@ -1,6 +1,17 @@
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
 """
 Common utilities.
 """
+
 import base64
 import json
 import logging
@@ -36,10 +47,7 @@ def build_logger(logger_name, logger_filename):
             logging.basicConfig(level=logging.INFO, encoding="utf-8")
         else:
             if platform.system() == "Windows":
-                warnings.warn(
-                    "If you are running on Windows, "
-                    "we recommend you use Python >= 3.9 for UTF-8 encoding."
-                )
+                warnings.warn("If you are running on Windows, " "we recommend you use Python >= 3.9 for UTF-8 encoding.")
             logging.basicConfig(level=logging.INFO)
     logging.getLogger().handlers[0].setFormatter(formatter)
 
@@ -65,9 +73,7 @@ def build_logger(logger_name, logger_filename):
     if LOGDIR != "":
         os.makedirs(LOGDIR, exist_ok=True)
         filename = os.path.join(LOGDIR, logger_filename)
-        handler = logging.handlers.TimedRotatingFileHandler(
-            filename, when="D", utc=True, encoding="utf-8"
-        )
+        handler = logging.handlers.TimedRotatingFileHandler(filename, when="D", utc=True, encoding="utf-8")
         handler.setFormatter(formatter)
 
         for l in [stdout_logger, stderr_logger, logger]:
@@ -130,11 +136,7 @@ def get_gpu_memory(max_gpus=None):
     import torch
 
     gpu_memory = []
-    num_gpus = (
-        torch.cuda.device_count()
-        if max_gpus is None
-        else min(max_gpus, torch.cuda.device_count())
-    )
+    num_gpus = torch.cuda.device_count() if max_gpus is None else min(max_gpus, torch.cuda.device_count())
 
     for gpu_id in range(num_gpus):
         with torch.cuda.device(gpu_id):
@@ -206,9 +208,7 @@ def clean_flant5_ckpt(ckpt_path):
     weightmap = index_json["weight_map"]
 
     share_weight_file = weightmap["shared.weight"]
-    share_weight = torch.load(os.path.join(ckpt_path, share_weight_file))[
-        "shared.weight"
-    ]
+    share_weight = torch.load(os.path.join(ckpt_path, share_weight_file))["shared.weight"]
 
     for weight_name in ["decoder.embed_tokens.weight", "encoder.embed_tokens.weight"]:
         weight_file = weightmap[weight_name]
@@ -248,9 +248,7 @@ function() {
 """
 
 
-def iter_over_async(
-    async_gen: AsyncGenerator, event_loop: AbstractEventLoop
-) -> Generator:
+def iter_over_async(async_gen: AsyncGenerator, event_loop: AbstractEventLoop) -> Generator:
     """
     Convert async generator to sync generator
 
@@ -449,9 +447,7 @@ def convert_image_to_byte_array(image, max_image_size_mb):
 
     if type(image) == str:
         pil_image = Image.open(image).convert("RGB")
-        image_bytes = resize_image_and_return_image_in_bytes(
-            pil_image, max_image_size_mb
-        )
+        image_bytes = resize_image_and_return_image_in_bytes(pil_image, max_image_size_mb)
     else:
         image_bytes = resize_image_and_return_image_in_bytes(image, max_image_size_mb)
 
@@ -480,9 +476,7 @@ def image_moderation_provider(image, api_type):
         response = image_moderation_request(image, endpoint, api_key)
         return response["IsImageAdultClassified"]
     elif api_type == "csam":
-        endpoint = (
-            "https://api.microsoftmoderator.com/photodna/v1.0/Match?enhance=false"
-        )
+        endpoint = "https://api.microsoftmoderator.com/photodna/v1.0/Match?enhance=false"
         api_key = os.environ["PHOTODNA_API_KEY"]
         response = image_moderation_request(image, endpoint, api_key)
         return response["IsMatch"]

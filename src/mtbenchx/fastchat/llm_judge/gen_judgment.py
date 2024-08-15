@@ -1,3 +1,13 @@
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
 """
 Usage:
 python gen_judgment.py --model-list [LIST-OF-MODEL-ID] --parallel [num-concurrent-api-call] --mode [single|pairwise-baseline|pairwise-all]

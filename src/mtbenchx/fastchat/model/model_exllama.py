@@ -1,3 +1,8 @@
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
 import gc
 import sys
 from typing import Dict
@@ -15,7 +20,7 @@ def generate_stream_exllama(
     judge_sent_end: bool = False,
 ):
     try:
-        from exllamav2.generator import ExLlamaV2StreamingGenerator, ExLlamaV2Sampler
+        from exllamav2.generator import ExLlamaV2Sampler, ExLlamaV2StreamingGenerator
     except ImportError as e:
         print(f"Error: Failed to load Exllamav2. {e}")
         sys.exit(-1)

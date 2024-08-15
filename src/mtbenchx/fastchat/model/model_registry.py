@@ -1,7 +1,12 @@
-"""Additional information of the models."""
-from collections import namedtuple, OrderedDict
-from typing import List
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
 
+"""Additional information of the models."""
+
+from collections import OrderedDict, namedtuple
+from typing import List
 
 ModelInfo = namedtuple("ModelInfo", ["simple_name", "link", "description"])
 
@@ -9,9 +14,7 @@ ModelInfo = namedtuple("ModelInfo", ["simple_name", "link", "description"])
 model_info = OrderedDict()
 
 
-def register_model_info(
-    full_names: List[str], simple_name: str, link: str, description: str
-):
+def register_model_info(full_names: List[str], simple_name: str, link: str, description: str):
     info = ModelInfo(simple_name, link, description)
 
     for full_name in full_names:
@@ -23,9 +26,7 @@ def get_model_info(name: str) -> ModelInfo:
         return model_info[name]
     else:
         # To fix this, please use `register_model_info` to register your model
-        return ModelInfo(
-            name, "", "Register the description at fastchat/model/model_registry.py"
-        )
+        return ModelInfo(name, "", "Register the description at fastchat/model/model_registry.py")
 
 
 register_model_info(

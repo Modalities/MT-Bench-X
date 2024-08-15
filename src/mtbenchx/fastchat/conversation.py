@@ -1,3 +1,13 @@
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
 """
 Conversation prompt templates.
 
@@ -45,6 +55,7 @@ class SeparatorStyle(IntEnum):
 
 
 IMAGE_PLACEHOLDER_STR = "$$<image>$$"
+
 
 @dataclasses.dataclass
 class Conversation:
@@ -389,9 +400,7 @@ class Conversation:
             else:
                 image = Image.open(image).convert("RGB")
 
-        image_bytes = resize_image_and_return_image_in_bytes(
-            image, self.max_image_size_mb
-        )
+        image_bytes = resize_image_and_return_image_in_bytes(image, self.max_image_size_mb)
         img_b64_str = base64.b64encode(image_bytes.getvalue()).decode()
 
         return img_b64_str
@@ -404,9 +413,7 @@ class Conversation:
                 if type(msg) is tuple:
                     msg, image = msg
                     img_b64_str = image[0]  # Only one image on gradio at one time
-                    if img_b64_str.startswith("http://") or img_b64_str.startswith(
-                        "https://"
-                    ):
+                    if img_b64_str.startswith("http://") or img_b64_str.startswith("https://"):
                         img_str = f'<img src="{img_b64_str}" alt="user upload image" />'
                     else:
                         img_str = f'<img src="data:image/png;base64,{img_b64_str}" alt="user upload image" />'
@@ -422,27 +429,18 @@ class Conversation:
 
         openai_images = []
         for image_url in image_urls:
-            if image_url.startswith("http://") or image_url.startswith(
-                "https://"
-            ):  # input is a url
+            if image_url.startswith("http://") or image_url.startswith("https://"):  # input is a url
                 openai_images.append(image_url)
-            elif image_url.lower().endswith(
-                ("png", "jpg", "jpeg", "webp", "gif")
-            ):  # input is a local image
+            elif image_url.lower().endswith(("png", "jpg", "jpeg", "webp", "gif")):  # input is a local image
                 img_b64_str = self.convert_image_to_base64(image_url)
                 filetype = image_url.split(".")[-1].lower()
                 openai_images.append(f"data:image/{filetype};base64,{img_b64_str}")
             else:
                 try:
-                    assert (
-                        base64.b64encode(base64.b64decode(image_url))
-                        == image_url.encode()
-                    ), "The image data is not a valid base64 encoded string"
+                    assert base64.b64encode(base64.b64decode(image_url)) == image_url.encode(), "The image data is not a valid base64 encoded string"
                     openai_images.append(f"data:image/png;base64,{image_url}")
                 except:
-                    raise ValueError(
-                        f"This file is not valid or not currently supported by the OpenAI API: {image_url}"
-                    )
+                    raise ValueError(f"This file is not valid or not currently supported by the OpenAI API: {image_url}")
         return openai_images
 
     def to_openai_vision_api_messages(self):
@@ -464,15 +462,11 @@ class Conversation:
 
                     image_urls = self.to_openai_image_format(msg[1])
                     for image_url in image_urls:
-                        content_list.append(
-                            {"type": "image_url", "image_url": {"url": image_url}}
-                        )
+                        content_list.append({"type": "image_url", "image_url": {"url": image_url}})
 
                     ret.append({"role": "user", "content": content_list})
                 else:
-                    ret.append(
-                        {"role": "user", "content": [{"type": "text", "text": msg}]}
-                    )
+                    ret.append({"role": "user", "content": [{"type": "text", "text": msg}]})
             else:
                 if msg is not None:
                     ret.append(
@@ -565,9 +559,7 @@ class Conversation:
 
                     for image_url in msg[1]:
                         # Claude only supports base64
-                        if image_url.startswith("http://") or image_url.startswith(
-                            "https://"
-                        ):
+                        if image_url.startswith("http://") or image_url.startswith("https://"):
                             image_url = self.convert_image_to_base64(image_url)
 
                         content_list.append(
@@ -583,9 +575,7 @@ class Conversation:
 
                     ret.append({"role": "user", "content": content_list})
                 else:
-                    ret.append(
-                        {"role": "user", "content": [{"type": "text", "text": msg}]}
-                    )
+                    ret.append({"role": "user", "content": [{"type": "text", "text": msg}]})
             else:
                 if msg is not None:
                     ret.append(
@@ -604,9 +594,7 @@ class Conversation:
                     text, images = msg
                     for image in images:
                         if image.startswith("https://") or image.startswith("http://"):
-                            ret.append(
-                                {"type": "human", "text": text, "media_url": image}
-                            )
+                            ret.append({"type": "human", "text": text, "media_url": image})
                         else:
                             ret.append(
                                 {
@@ -634,14 +622,10 @@ class Conversation:
         if type(last_user_message) == tuple:
             text, images = last_user_message[0], last_user_message[1]
             loaded_images = [load_image(image) for image in images]
-            image_hashes = [
-                hashlib.md5(image.tobytes()).hexdigest() for image in loaded_images
-            ]
+            image_hashes = [hashlib.md5(image.tobytes()).hexdigest() for image in loaded_images]
 
             image_directory_name = "csam_images" if has_csam_images else "serve_images"
-            for i, (loaded_image, hash_str) in enumerate(
-                zip(loaded_images, image_hashes)
-            ):
+            for i, (loaded_image, hash_str) in enumerate(zip(loaded_images, image_hashes)):
                 filename = os.path.join(
                     image_directory_name,
                     f"{hash_str}.jpg",
@@ -1785,10 +1769,7 @@ register_conv_template(
     Conversation(
         name="vigogne_instruct",
         system_template="### System:\n{system_message}\n\n",
-        system_message=(
-            "Ci-dessous se trouve une instruction qui décrit une tâche à accomplir. Rédigez une réponse qui répond de manière"
-            " précise à la demande."
-        ),
+        system_message=("Ci-dessous se trouve une instruction qui décrit une tâche à accomplir. Rédigez une réponse qui répond de manière" " précise à la demande."),
         roles=("### Instruction", "### Response"),
         sep_style=SeparatorStyle.DOLLY,
         sep="\n\n",
@@ -1801,10 +1782,7 @@ register_conv_template(
     Conversation(
         name="vigogne_chat_v2",
         system_template="<|system|>: {system_message}",
-        system_message=(
-            "Vous êtes Vigogne, un assistant IA créé par Zaion Lab. Vous suivez extrêmement bien les instructions. Aidez"
-            " autant que vous le pouvez."
-        ),
+        system_message=("Vous êtes Vigogne, un assistant IA créé par Zaion Lab. Vous suivez extrêmement bien les instructions. Aidez" " autant que vous le pouvez."),
         roles=("<|user|>", "<|assistant|>"),
         sep_style=SeparatorStyle.ADD_COLON_TWO,
         sep="\n",
@@ -1831,10 +1809,7 @@ register_conv_template(
     Conversation(
         name="vigogne_chat_v3",
         system_template="[INST] <<SYS>>\n{system_message}\n<</SYS>>\n\n",
-        system_message=(
-            "Vous êtes Vigogne, un assistant IA créé par Zaion Lab. Vous suivez extrêmement bien les instructions. Aidez"
-            " autant que vous le pouvez."
-        ),
+        system_message=("Vous êtes Vigogne, un assistant IA créé par Zaion Lab. Vous suivez extrêmement bien les instructions. Aidez" " autant que vous le pouvez."),
         roles=("[INST]", "[/INST]"),
         sep_style=SeparatorStyle.LLAMA2,
         sep=" ",
@@ -2089,51 +2064,31 @@ register_conv_template(
     Conversation(
         name="opengptx",
         system_template="System: {system_message}",
-        system_message="A chat between a human and an artificial intelligence assistant. "
-        "The assistant gives helpful and polite answers to the human's questions.",
+        system_message="A chat between a human and an artificial intelligence assistant. " "The assistant gives helpful and polite answers to the human's questions.",
         roles=("User", "Assistant"),
         sep_style=SeparatorStyle.COLON_SURROUND,
         sep="<s>",
         sep2="</s>",
-        system_messages={ # translations by deepl
-            "EN": "A chat between a human and an artificial intelligence assistant."
-            " The assistant gives helpful and polite answers to the human's questions.",
+        system_messages={  # translations by deepl
+            "EN": "A chat between a human and an artificial intelligence assistant." " The assistant gives helpful and polite answers to the human's questions.",
             "DE": "Ein Gespräch zwischen einem Menschen und einem Assistenten mit künstlicher Intelligenz."
             " Der Assistent gibt hilfreiche und höfliche Antworten auf die Fragen des Menschen.",
-            "FR": "Conversation entre un humain et un assistant doté d'une intelligence artificielle."
-            " L'assistant donne des réponses utiles et polies aux questions de l'homme.",
-            "IT": "Una chat tra un umano e un assistente di intelligenza artificiale."
-            " L'assistente fornisce risposte utili ed educate alle domande dell'uomo.",
-            "ES": "Una conversación entre un humano y un asistente de inteligencia artificial."
-            " El asistente da respuestas útiles y amables a las preguntas del humano.",
-            'CS': 'Chat mezi člověkem a asistentem s umělou inteligencí. Asistent '
-                'poskytuje vstřícné a zdvořilé odpovědi na otázky člověka.',
-            'ET': 'Inimese ja tehisintellekti assistendi vaheline vestlus. Assistent '
-                'annab inimese küsimustele abivalmis ja viisakaid vastuseid.',
-            'FI': 'Ihmisen ja tekoälyavustajan välinen keskustelu. Avustaja antaa '
-                'avuliaita ja kohteliaita vastauksia ihmisen kysymyksiin.',
-            'HR': 'Razgovor između čovjeka i pomoćnika umjetne inteligencije. Pomoćnik daje korisne i ljubazne odgovore na ljudska pitanja.', # by google translate
-            'LT': 'Žmogaus ir dirbtinio intelekto asistento pokalbis. Asistentas '
-                'naudingai ir mandagiai atsako į žmogaus klausimus.',
-            'LV': 'Cilvēka un mākslīgā intelekta asistenta tērzēšana. Asistents sniedz '
-                'noderīgas un pieklājīgas atbildes uz cilvēka jautājumiem.',
-            'NL': 'Een chat tussen een mens en een assistent met kunstmatige '
-                'intelligentie. De assistent geeft behulpzame en beleefde antwoorden op '
-                'de vragen van de mens.',
-            'PL': 'Czat między człowiekiem a asystentem sztucznej inteligencji. Asystent '
-                'udziela pomocnych i uprzejmych odpowiedzi na pytania człowieka.',
-            'PT': 'Uma conversa entre um ser humano e um assistente de inteligência '
-                'artificial. O assistente dá respostas úteis e educadas às perguntas do '
-                'utilizador.',
-            'RO': 'O conversație între un om și un asistent cu inteligență artificială. '
-                'Asistentul oferă răspunsuri utile și politicoase la întrebările '
-                'omului.',
-            'SL': 'Pogovor med človekom in pomočnikom z umetno inteligenco. Pomočnik '
-                'človeku prijazno in vljudno odgovarja na njegova vprašanja.',
-            'SV': 'En chatt mellan en människa och en assistent med artificiell '
-                'intelligens. Assistenten ger hjälpsamma och artiga svar på människans '
-                'frågor.'
-        }
+            "FR": "Conversation entre un humain et un assistant doté d'une intelligence artificielle." " L'assistant donne des réponses utiles et polies aux questions de l'homme.",
+            "IT": "Una chat tra un umano e un assistente di intelligenza artificiale." " L'assistente fornisce risposte utili ed educate alle domande dell'uomo.",
+            "ES": "Una conversación entre un humano y un asistente de inteligencia artificial." " El asistente da respuestas útiles y amables a las preguntas del humano.",
+            "CS": "Chat mezi člověkem a asistentem s umělou inteligencí. Asistent " "poskytuje vstřícné a zdvořilé odpovědi na otázky člověka.",
+            "ET": "Inimese ja tehisintellekti assistendi vaheline vestlus. Assistent " "annab inimese küsimustele abivalmis ja viisakaid vastuseid.",
+            "FI": "Ihmisen ja tekoälyavustajan välinen keskustelu. Avustaja antaa " "avuliaita ja kohteliaita vastauksia ihmisen kysymyksiin.",
+            "HR": "Razgovor između čovjeka i pomoćnika umjetne inteligencije. Pomoćnik daje korisne i ljubazne odgovore na ljudska pitanja.",  # by google translate
+            "LT": "Žmogaus ir dirbtinio intelekto asistento pokalbis. Asistentas " "naudingai ir mandagiai atsako į žmogaus klausimus.",
+            "LV": "Cilvēka un mākslīgā intelekta asistenta tērzēšana. Asistents sniedz " "noderīgas un pieklājīgas atbildes uz cilvēka jautājumiem.",
+            "NL": "Een chat tussen een mens en een assistent met kunstmatige " "intelligentie. De assistent geeft behulpzame en beleefde antwoorden op " "de vragen van de mens.",
+            "PL": "Czat między człowiekiem a asystentem sztucznej inteligencji. Asystent " "udziela pomocnych i uprzejmych odpowiedzi na pytania człowieka.",
+            "PT": "Uma conversa entre um ser humano e um assistente de inteligência " "artificial. O assistente dá respostas úteis e educadas às perguntas do " "utilizador.",
+            "RO": "O conversație între un om și un asistent cu inteligență artificială. " "Asistentul oferă răspunsuri utile și politicoase la întrebările " "omului.",
+            "SL": "Pogovor med človekom in pomočnikom z umetno inteligenco. Pomočnik " "človeku prijazno in vljudno odgovarja na njegova vprašanja.",
+            "SV": "En chatt mellan en människa och en assistent med artificiell " "intelligens. Assistenten ger hjälpsamma och artiga svar på människans " "frågor.",
+        },
     )
 )
 

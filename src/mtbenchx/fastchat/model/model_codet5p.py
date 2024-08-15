@@ -1,5 +1,11 @@
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
 import gc
 from threading import Thread
+
 import torch
 import transformers
 from transformers import (
@@ -48,9 +54,7 @@ def generate_stream_codet5p(
     )
 
     class CodeBlockStopper(StoppingCriteria):
-        def __call__(
-            self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs
-        ) -> bool:
+        def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
             # Code-completion is open-end generation.
             # We check \n\n to stop at end of a code block.
             if list(input_ids[0][-2:]) == [628, 198]:

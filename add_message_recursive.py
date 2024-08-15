@@ -4,7 +4,7 @@ from pathlib import Path
 directory = Path("/raid/s3/opengptx/alexw/mtbenchx/src/mtbenchx/fastchat")
 
 # Message to be added
-message = """# This file is part of a project that has been adapted from FastChat.
+message = """# This file was modified and originally stemmed from FastChat.
 # For more information, visit: https://github.com/lm-sys/FastChat
 # Distributed under the Apache License, Version 2.0
 # See http://www.apache.org/licenses/LICENSE-2.0 for more details.
@@ -18,7 +18,7 @@ def add_message_to_file(file_path):
 
 
 # Walk through the directory recursively
-for file_path in directory.rglob("*"):
+for file_path in directory.rglob("*.py"):
     if file_path.is_file():
         add_message_to_file(file_path)
 

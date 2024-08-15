@@ -1,5 +1,10 @@
-from dataclasses import dataclass
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
 import sys
+from dataclasses import dataclass
 
 
 @dataclass
@@ -33,12 +38,8 @@ def load_xft_model(model_path, xft_config: XftConfig):
         data_type = "bf16_fp16"
     else:
         data_type = xft_config.data_type
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_path, use_fast=False, padding_side="left", trust_remote_code=True
-    )
-    xft_model = xfastertransformer.AutoModel.from_pretrained(
-        model_path, dtype=data_type
-    )
+    tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False, padding_side="left", trust_remote_code=True)
+    xft_model = xfastertransformer.AutoModel.from_pretrained(model_path, dtype=data_type)
     model = XftModel(xft_model=xft_model, xft_config=xft_config)
     if model.model.rank > 0:
         while True:

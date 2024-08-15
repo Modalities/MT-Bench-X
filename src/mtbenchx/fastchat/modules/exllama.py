@@ -1,5 +1,10 @@
-from dataclasses import dataclass, field
+# This file was modified and originally stemmed from FastChat.
+# For more information, visit: https://github.com/lm-sys/FastChat
+# Distributed under the Apache License, Version 2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for more details.
+
 import sys
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -19,11 +24,11 @@ class ExllamaModel:
 def load_exllama_model(model_path, exllama_config: ExllamaConfig):
     try:
         from exllamav2 import (
-            ExLlamaV2Config,
-            ExLlamaV2Tokenizer,
             ExLlamaV2,
             ExLlamaV2Cache,
             ExLlamaV2Cache_8bit,
+            ExLlamaV2Config,
+            ExLlamaV2Tokenizer,
         )
     except ImportError as e:
         print(f"Error: Failed to load Exllamav2. {e}")
