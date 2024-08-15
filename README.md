@@ -31,11 +31,11 @@ pip install -e .
 Example execution:
 ```bash
 OPENAI_API_KEY=xyz mtbenchx \
-    # load model from a local checkpoint or by a hugging face hub id
+    # load model from a local checkpoint or by a Hugging Face Hub ID
     --model-path "your_model_path" \
-    # the model-id is used to get the correct ModelAdapter and Conversation(-Template)
+    # the model-id is used to get the correct ModelAdapter and Conversation(-template)
     --model-id "llama-2" \
-    # in case there are several checkpoints you want to compare, change --model-id-postfix for their identification
+    # allows for identification of several checkpoints by a postfix
     --model-id-postfix "my-local-model-variation" \
     --question-begin 6 --question-end 10 \
     --eval-languages DE EN --max-new-token 1024 
