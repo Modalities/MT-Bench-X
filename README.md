@@ -5,7 +5,7 @@ Adapting multilingual pre-trained large language models (LLMs) into articulate a
 In line with this objective, we release our multilingual evaluation benchmark MT-Bench-X to evaluate multilingual models that have been instruction-tuned on different language compositions. 
 We focus on a selection of the most spoken Indo-European languages: English, German, French, Italian, and Spanish.
 
-For more details, see our [Paper](https://arxiv.org/abs/2402.13703).
+For more details, see our [paper](https://arxiv.org/abs/2402.13703).
 
 This evaluation framework allows to 
 1. Generate the answers to the MT-Bench-X benchmark across the selected languages
@@ -37,16 +37,18 @@ OPENAI_API_KEY=xyz mtbenchx \
     --model-id "llama-2" \
     # allows for identification of several checkpoints by a postfix
     --model-id-postfix "my-local-model-variation" \
-    --question-begin 6 --question-end 10 \
-    --eval-languages DE EN --max-new-token 1024 
+    --question-begin 6 \
+    --question-end 10 \
+    --eval-languages DE EN \
+    --max-new-token 1024  \
     # how many OpenAI requests to execute in parallel
     --parallel 6 \
     # allows for data-parallel answer generation
-    --num-gpus-per-model 1 --num-gpus-total 8 
+    --num-gpus-per-model 1 \
+    --num-gpus-total 8 
 ```
 
 Type `mtbenchx --help` for more information about the input arguments.
-
 
 
 ## Citation
