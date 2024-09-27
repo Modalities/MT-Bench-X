@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import List
 
 import numpy as np
+from tqdm import tqdm
+
 from mtbenchx.evalset import EvalSet
 from mtbenchx.fastchat.llm_judge.common import (
     NEED_REF_CATS,
@@ -14,9 +16,8 @@ from mtbenchx.fastchat.llm_judge.common import (
     play_a_match_single,
 )
 from mtbenchx.fastchat.llm_judge.gen_judgment import make_judge_single, make_match_single
-from mtbenchx.fastchat.llm_judge.gen_model_answer import reorg_answer_file, run_eval
+from mtbenchx.fastchat.llm_judge.gen_model_answer import run_eval
 from mtbenchx.fastchat.llm_judge.utils import str_to_torch_dtype
-from tqdm import tqdm
 
 
 def gen_mulilingual_model_answers(args, bench_names: List[str], model_id: str):
@@ -50,6 +51,20 @@ def gen_mulilingual_model_answers(args, bench_names: List[str], model_id: str):
     )
     for eval_set in eval_sets:
         reorg_answer_file(eval_set.answer_file)
+
+
+def reorg_answer_file(answer_file):
+    """Sort by question id and de-duplication"""
+    answers = {}
+    with open(answer_file, "r") as fin:
+        for l in fin:
+            qid = json.loads(l)["question_id"]
+            answers[qid] = l
+
+    qids = sorted(list(answers.keys()))
+    with open(answer_file, "w", encoding="utf-8") as fout:
+        for qid in qids:
+            fout.write(answers[qid])
 
 
 def run_judgment_jobs(args, bench_name, model_id):
@@ -118,7 +133,7 @@ def run_judgment_jobs(args, bench_name, model_id):
 
     # Show match stats and prompt enter to continue
     print("Stats:")
-    print(json.dumps(match_stat, indent=4))
+    print(json.dumps(match_stat, indent=4, ensure_ascii=False))
     input("Press Enter to confirm...")
 
     output_file = match_stat["output_path"]

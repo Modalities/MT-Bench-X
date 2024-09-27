@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import warnings
 
 from mtbenchx.collect_model_specific_judgments import collect_model_specific_judgments
@@ -40,7 +41,7 @@ def setup_parser():
         default=1,
         help="The number of GPUs per model.",
     )
-    parser.add_argument("--num-gpus-total", type=int, default=1, help="The total number of GPUs.")
+    parser.add_argument("--num-gpus-total", type=int, default=len(os.environ.get("CUDA_VISIBLE_DEVICES", "0").split(",")), help="The total number of GPUs.")
     parser.add_argument(
         "--max-gpu-memory",
         type=str,
@@ -85,6 +86,8 @@ def main():
     args = setup_parser()
     if args.num_choices > 1:
         warnings.warn("Warning: num_choices > 1 is not supported yet when judging the generated answers. Only the first is used!")
+
+    print(f"Generating model answers and judgments across {args.num_gpus_total} GPU(s)...")
 
     model_id = f"{args.model_id}-{args.model_id_postfix}" if args.model_id_postfix != "" else f"{args.model_id}"
     bench_names = [f"mt_bench_{eval_language}" for eval_language in args.eval_languages]

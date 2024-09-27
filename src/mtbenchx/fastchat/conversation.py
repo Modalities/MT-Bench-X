@@ -85,6 +85,7 @@ class Conversation:
     system_messages: Dict[str, str] = None
     # The maximum image size in megabytes that this model takes in. None means we do not resize the image.
     max_image_size_mb: int = None
+    eos_token: str | None = None
 
     def get_prompt(self) -> str:
         """Get the prompt for generation."""
@@ -387,6 +388,7 @@ class Conversation:
     def convert_image_to_base64(self, image):
         """Given an image, return the base64 encoded image string."""
         import requests
+
         from mtbenchx.fastchat.utils import resize_image_and_return_image_in_bytes
 
         # Load image if it has not been loaded in yet
@@ -2067,30 +2069,39 @@ register_conv_template(
         system_message="A chat between a human and an artificial intelligence assistant. " "The assistant gives helpful and polite answers to the human's questions.",
         roles=("User", "Assistant"),
         sep_style=SeparatorStyle.COLON_SURROUND,
-        sep="<s>",
+        sep="",
         sep2="</s>",
-        system_messages={  # translations by deepl
-            "EN": "A chat between a human and an artificial intelligence assistant." " The assistant gives helpful and polite answers to the human's questions.",
-            "DE": "Ein Gespräch zwischen einem Menschen und einem Assistenten mit künstlicher Intelligenz."
-            " Der Assistent gibt hilfreiche und höfliche Antworten auf die Fragen des Menschen.",
-            "FR": "Conversation entre un humain et un assistant doté d'une intelligence artificielle." " L'assistant donne des réponses utiles et polies aux questions de l'homme.",
-            "IT": "Una chat tra un umano e un assistente di intelligenza artificiale." " L'assistente fornisce risposte utili ed educate alle domande dell'uomo.",
-            "ES": "Una conversación entre un humano y un asistente de inteligencia artificial." " El asistente da respuestas útiles y amables a las preguntas del humano.",
-            "CS": "Chat mezi člověkem a asistentem s umělou inteligencí. Asistent " "poskytuje vstřícné a zdvořilé odpovědi na otázky člověka.",
-            "ET": "Inimese ja tehisintellekti assistendi vaheline vestlus. Assistent " "annab inimese küsimustele abivalmis ja viisakaid vastuseid.",
-            "FI": "Ihmisen ja tekoälyavustajan välinen keskustelu. Avustaja antaa " "avuliaita ja kohteliaita vastauksia ihmisen kysymyksiin.",
-            "HR": "Razgovor između čovjeka i pomoćnika umjetne inteligencije. Pomoćnik daje korisne i ljubazne odgovore na ljudska pitanja.",  # by google translate
-            "LT": "Žmogaus ir dirbtinio intelekto asistento pokalbis. Asistentas " "naudingai ir mandagiai atsako į žmogaus klausimus.",
-            "LV": "Cilvēka un mākslīgā intelekta asistenta tērzēšana. Asistents sniedz " "noderīgas un pieklājīgas atbildes uz cilvēka jautājumiem.",
-            "NL": "Een chat tussen een mens en een assistent met kunstmatige " "intelligentie. De assistent geeft behulpzame en beleefde antwoorden op " "de vragen van de mens.",
-            "PL": "Czat między człowiekiem a asystentem sztucznej inteligencji. Asystent " "udziela pomocnych i uprzejmych odpowiedzi na pytania człowieka.",
-            "PT": "Uma conversa entre um ser humano e um assistente de inteligência " "artificial. O assistente dá respostas úteis e educadas às perguntas do " "utilizador.",
-            "RO": "O conversație între un om și un asistent cu inteligență artificială. " "Asistentul oferă răspunsuri utile și politicoase la întrebările " "omului.",
-            "SL": "Pogovor med človekom in pomočnikom z umetno inteligenco. Pomočnik " "človeku prijazno in vljudno odgovarja na njegova vprašanja.",
-            "SV": "En chatt mellan en människa och en assistent med artificiell " "intelligens. Assistenten ger hjälpsamma och artiga svar på människans " "frågor.",
+        system_messages={  # translations by deepl (mt and ga by google translate)
+            "BG": "Чат между човек и асистент с изкуствен интелект. Асистентът дава полезни и учтиви отговори на въпросите на човека.",  # noqa
+            "CS": "Chat mezi člověkem a asistentem s umělou inteligencí. Asistent poskytuje vstřícné a zdvořilé odpovědi na otázky člověka.",  # noqa
+            "DA": "En chat mellem et menneske og en assistent med kunstig intelligens, som giver hjælpsomme og høflige svar på menneskets spørgsmål.",  # noqa
+            "DE": "Ein Gespräch zwischen einem Menschen und einem Assistenten mit künstlicher Intelligenz. Der Assistent gibt hilfreiche und höfliche Antworten auf die Fragen des Menschen.",  # noqa
+            "EL": "Μια συνομιλία μεταξύ ενός ανθρώπου και ενός βοηθού τεχνητής νοημοσύνης. Ο βοηθός δίνει χρήσιμες και ευγενικές απαντήσεις στις ερωτήσεις του ανθρώπου.",  # noqa
+            "EN": "A chat between a human and an artificial intelligence assistant.The assistant gives helpful and polite answers to the human's questions.",  # noqa
+            "ES": "Una conversación entre un humano y un asistente de inteligencia artificial. El asistente da respuestas útiles y amables a las preguntas del humano.",  # noqa
+            "ET": "Inimese ja tehisintellekti assistendi vaheline vestlus. Assistent annab inimese küsimustele abivalmis ja viisakaid vastuseid.",  # noqa
+            "FI": "Ihmisen ja tekoälyavustajan välinen keskustelu. Avustaja antaa avuliaita ja kohteliaita vastauksia ihmisen kysymyksiin.",  # noqa
+            "FR": "Conversation entre un humain et un assistant doté d'une intelligence artificielle. L'assistant donne des réponses utiles et polies aux questions de l'homme.",  # noqa
+            "GA": "Comhrá idir duine agus cúntóir hintleachta saorga. Tugann an cúntóir freagraí cabhracha dea-bhéasacha ar cheisteanna an duine.",  # noqa
+            "HR": "Razgovor između čovjeka i pomoćnika umjetne inteligencije. Pomoćnik daje korisne i ljubazne odgovore na ljudska pitanja.",  # noqa
+            "HU": "Egy ember és egy mesterséges intelligencia asszisztens közötti beszélgetés. Az asszisztens segítőkész és udvarias válaszokat ad az ember kérdéseire.",  # noqa
+            "IT": "Una chat tra un umano e un assistente di intelligenza artificiale. L'assistente fornisce risposte utili ed educate alle domande dell'uomo.",  # noqa
+            "LT": "Žmogaus ir dirbtinio intelekto asistento pokalbis. Asistentas naudingai ir mandagiai atsako į žmogaus klausimus.",  # noqa
+            "LV": "Cilvēka un mākslīgā intelekta asistenta tērzēšana. Asistents sniedz noderīgas un pieklājīgas atbildes uz cilvēka jautājumiem.",  # noqa
+            "MT": "Chat bejn bniedem u assistent ta' intelliġenza artifiċjali. L-assistent jagħti tweġibiet ta' għajnuna u edukat għall-mistoqsijiet tal-bniedem.",  # noqa
+            "NL": "Een chat tussen een mens en een assistent met kunstmatige intelligentie. De assistent geeft behulpzame en beleefde antwoorden op de vragen van de mens.",  # noqa
+            "PL": "Czat między człowiekiem a asystentem sztucznej inteligencji. Asystent udziela pomocnych i uprzejmych odpowiedzi na pytania człowieka.",  # noqa
+            "PT": "Uma conversa entre um ser humano e um assistente de inteligência artificial. O assistente dá respostas úteis e educadas às perguntas do utilizador.",  # noqa
+            "RO": "O conversație între un om și un asistent cu inteligență artificială. Asistentul oferă răspunsuri utile și politicoase la întrebările omului.",  # noqa
+            "SK": "Rozhovor medzi človekom a asistentom s umelou inteligenciou. Asistent poskytuje užitočné a zdvorilé odpovede na otázky človeka.",  # noqa
+            "SL": "Pogovor med človekom in pomočnikom z umetno inteligenco. Pomočnik človeku prijazno in vljudno odgovarja na njegova vprašanja.",  # noqa
+            "SV": "En chatt mellan en människa och en assistent med artificiell intelligens. Assistenten ger hjälpsamma och artiga svar på människans frågor.",  # noqa
         },
+        eos_token="<eod>",
+        stop_str="</s>",
     )
 )
+
 
 if __name__ == "__main__":
     from mtbenchx.fastchat.conversation import get_conv_template

@@ -28,12 +28,12 @@ from typing import Dict, List, Optional, Tuple
 import ray
 import shortuuid
 import torch
-from mtbenchx.fastchat.llm_judge.common import load_questions, temperature_config
-from mtbenchx.fastchat.llm_judge.utils import str_to_torch_dtype
-from mtbenchx.fastchat.model.model_adapter import get_conversation_template, load_model
-from mtbenchx.generate_answers_and_judgments import EvalSet
 from tqdm import tqdm
 from transformers import StoppingCriteriaList
+
+from mtbenchx.evalset import EvalSet
+from mtbenchx.fastchat.llm_judge.common import load_questions, temperature_config
+from mtbenchx.fastchat.model.model_adapter import get_conversation_template, load_model
 
 
 def run_eval(
@@ -238,7 +238,7 @@ def get_model_answers(
                 "choices": choices,
                 "tstamp": time.time(),
             }
-            fout.write(json.dumps(ans_json) + "\n")
+            fout.write(json.dumps(ans_json, ensure_ascii=False) + "\n")
 
 
 def get_stop_token_ids_and_eos_token_id(conv_template, tokenizer) -> Tuple[List[List[int]], int]:
@@ -273,17 +273,3 @@ def tokenize_text(tokenizer, text: str):
 
     ids = alternative_ids if len(alternative_ids) < len(ids) else ids
     return ids
-
-
-def reorg_answer_file(answer_file):
-    """Sort by question id and de-duplication"""
-    answers = {}
-    with open(answer_file, "r") as fin:
-        for l in fin:
-            qid = json.loads(l)["question_id"]
-            answers[qid] = l
-
-    qids = sorted(list(answers.keys()))
-    with open(answer_file, "w") as fout:
-        for qid in qids:
-            fout.write(answers[qid])

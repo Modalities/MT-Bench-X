@@ -18,6 +18,8 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
+from tqdm import tqdm
+
 from mtbenchx.fastchat.llm_judge.common import (
     NEED_REF_CATS,
     Judge,
@@ -31,7 +33,6 @@ from mtbenchx.fastchat.llm_judge.common import (
     play_a_match_pair,
     play_a_match_single,
 )
-from tqdm import tqdm
 
 
 def make_match(
@@ -294,7 +295,7 @@ if __name__ == "__main__":
 
     # Show match stats and prompt enter to continue
     print("Stats:")
-    print(json.dumps(match_stat, indent=4))
+    print(json.dumps(match_stat, indent=4, ensure_ascii=False))
     input("Press Enter to confirm...")
 
     # Play matches

@@ -20,6 +20,17 @@ else:
 
 import psutil
 import torch
+from transformers import (
+    AutoConfig,
+    AutoModel,
+    AutoModelForCausalLM,
+    AutoModelForSeq2SeqLM,
+    AutoTokenizer,
+    LlamaForCausalLM,
+    LlamaTokenizer,
+    T5Tokenizer,
+)
+
 from mtbenchx.fastchat.constants import CPU_ISA
 from mtbenchx.fastchat.conversation import Conversation, get_conv_template
 from mtbenchx.fastchat.model.compression import load_compress_model
@@ -37,16 +48,6 @@ from mtbenchx.fastchat.modules.exllama import ExllamaConfig, load_exllama_model
 from mtbenchx.fastchat.modules.gptq import GptqConfig, load_gptq_quantized
 from mtbenchx.fastchat.modules.xfastertransformer import XftConfig, load_xft_model
 from mtbenchx.fastchat.utils import get_gpu_memory
-from transformers import (
-    AutoConfig,
-    AutoModel,
-    AutoModelForCausalLM,
-    AutoModelForSeq2SeqLM,
-    AutoTokenizer,
-    LlamaForCausalLM,
-    LlamaTokenizer,
-    T5Tokenizer,
-)
 
 # Check an environment variable to check if we should be sharing Peft model
 # weights.  When false we treat all Peft models as separate.
@@ -2309,25 +2310,16 @@ class OpenGPTXAdapter(BaseModelAdapter):
         return "opengptx" in model_path
 
     def load_model(self, model_path: str, from_pretrained_kwargs: dict):
-        config = AutoConfig.from_pretrained(
-            model_path,
-            trust_remote_code=True,
-            use_cache=False,
-        )
-
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_path,
-            model_max_length=2048,
-            trust_remote_code=True,
-            padding_side="right",
-            use_fast=False,
-        )
-
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
-            config=config,
-            low_cpu_mem_usage=True,
-            device_map="cuda",
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16,
+            attn_implementation="flash_attention_2",
+        )
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_path,
+            padding_side="right",
+            use_fast=False,
             trust_remote_code=True,
         )
 
