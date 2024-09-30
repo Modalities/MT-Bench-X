@@ -54,8 +54,9 @@ def run_eval(
     questions = []
     answer_files = []
     for eval_set in eval_sets:
-        questions.extend(load_questions(eval_set.question_file, question_begin, question_end))
-        answer_files.extend([eval_set.answer_file for _ in range(len(questions))])
+        eval_set_questions = load_questions(eval_set.question_file, question_begin, question_end)
+        questions.extend(eval_set_questions)
+        answer_files.extend([eval_set.answer_file for _ in range(len(eval_set_questions))])
 
     # random shuffle the questions to balance the loading
 
@@ -138,7 +139,7 @@ def get_model_answers(
     print(f"Loaded model as {type(model)} and tokenizer as {type(tokenizer)}")
     print(f"Use conversation template of model ID {model_id}: {get_conversation_template(model_id).name}")
 
-    for question, answer_file in tqdm(zip(questions, answer_files), total=len(questions)):
+    for question, answer_file in tqdm(zip(questions, answer_files), total=len(questions), desc=f"GPU {torch.cuda.current_device()}"):
         if question["category"] in temperature_config:
             temperature = temperature_config[question["category"]]
         else:

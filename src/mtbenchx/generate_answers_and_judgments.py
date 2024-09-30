@@ -30,7 +30,11 @@ def gen_mulilingual_model_answers(args, bench_names: List[str], model_id: str):
     eval_sets = []
     print("Will create model answers for:")
     for bench_name in bench_names:
-        eval_set = EvalSet(question_file=f"data/{bench_name}/question.jsonl", answer_file=f"data/{bench_name}/model_answer/{model_id}.jsonl")
+        answer_file = Path(f"data/{bench_name}/model_answer/{model_id}.jsonl")
+        if not answer_file.exists():
+            answer_file.parent.mkdir(parents=True, exist_ok=True)
+            answer_file.touch()
+        eval_set = EvalSet(question_file=f"data/{bench_name}/question.jsonl", answer_file=answer_file)
         eval_sets.append(eval_set)
         print(eval_set)
 
@@ -56,6 +60,7 @@ def gen_mulilingual_model_answers(args, bench_names: List[str], model_id: str):
 def reorg_answer_file(answer_file):
     """Sort by question id and de-duplication"""
     answers = {}
+    Path(answer_file).parent.mkdir(parents=True, exist_ok=True)
     with open(answer_file, "r") as fin:
         for l in fin:
             qid = json.loads(l)["question_id"]
