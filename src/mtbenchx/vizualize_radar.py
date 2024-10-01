@@ -36,9 +36,9 @@ def create_rader_plot(df):
     radar_plot = px.line_polar(
         df,
         r="score",
-        theta="category",
+        theta="Category",
         line_close=True,
-        category_orders={"category": df["category"].unique()},
+        category_orders={"Category": df["Category"].unique()},
         color="Turn",  # Distinguish between turns
         markers=True,
         color_discrete_sequence=color_mapping[lang],
@@ -84,26 +84,31 @@ if __name__ == "__main__":
     df = pd.DataFrame.from_dict(list(data.values()))
     df.category = df.category.str.capitalize()
     df.language = df.language.str.upper()
-    df.rename(columns={"turn": "Turn"}, inplace=True)
+    df.rename(columns={"turn": "Turn", "language": "Language", "category": "Category"}, inplace=True)
 
     # cross-lingual average
-    cross_lingual_avg = df.groupby(["Turn", "category"]).score.mean().reset_index().copy()
-    cross_lingual_avg["language"] = "Avg."
+    cross_lingual_avg = df.groupby(["Turn", "Category"]).score.mean().reset_index().copy()
+    cross_lingual_avg["Language"] = "Avg."
     df = pd.concat([df, cross_lingual_avg], ignore_index=True)
 
-    # category average
-    # category_avg = df.groupby(["Turn", "language"]).score.mean().reset_index().copy()
-    # category_avg["category"] = "Avg."
-    # df = pd.concat([df, category_avg], ignore_index=True)
-
-    languages = df["language"].unique()
+    languages = df["Language"].unique()
 
     model_name = args.file_path.stem.rsplit("_", 1)[0]
     out_path = Path(f"visualization/{model_name}/")
     out_path.mkdir(exist_ok=True, parents=True)
     fix_mathjs_error()
     for lang in languages:
-        df_filtered = df[df["language"] == lang].copy()
+        df_filtered = df[df["Language"] == lang].copy()
         radar_plot = create_rader_plot(df_filtered)
         out_file_path = out_path / f"{model_name}_mt_bench_{lang.replace('.', '')}_radar_plot.pdf"
         radar_plot.write_image(str(out_file_path))
+
+    # add category average
+    category_avg = df.groupby(["Turn", "Language"]).score.mean().reset_index().copy()
+    category_avg["Category"] = "Avg."
+    df = pd.concat([df, category_avg], ignore_index=True)
+
+    # create csv
+    pivot = df.pivot(index=["Turn", "Language"], columns="Category", values="score")
+    pivot = pivot.reset_index()
+    pivot.to_csv(out_path / f"{model_name}_mt_bench_x.csv", index=False, float_format="%.2f")
