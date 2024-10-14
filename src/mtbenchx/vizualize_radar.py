@@ -69,18 +69,22 @@ def create_rader_plot(df):
             trace.line.dash = "dot"
     return radar_plot
 
-
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--file-path", required=True, type=Path, help="")
+    parser.add_argument("--dir-path", nargs="+", type=Path, help="List of directories containing json result files", required=True)
     args = parser.parse_args()
-    with args.file_path.open() as json_file:
-        data = json.load(json_file)
 
-    data = data["results"]
-    data = {key: (value | extract_key_info(key)) for key, value in data.items()}
+    data = []
+    for dir_path in args.dir_path:
+        file_path = dir_path / (dir_path.stem + "_judgments.json")
+        with file_path.open() as json_file:
+            results = json.load(json_file)["results"]
+            results = {key: (value | extract_key_info(key)) for key, value in results.items()}
+            results["model"] = dir_path.name
+            data.append(results)
+
     df = pd.DataFrame.from_dict(list(data.values()))
     df.category = df.category.str.capitalize()
     df.language = df.language.str.upper()
@@ -94,7 +98,7 @@ if __name__ == "__main__":
     languages = df["Language"].unique()
 
     model_name = args.file_path.stem.rsplit("_", 1)[0]
-    out_path = Path(f"visualization/{model_name}/")
+    out_path = Path(f"results/{model_name}/")
     out_path.mkdir(exist_ok=True, parents=True)
     fix_mathjs_error()
     for lang in languages:

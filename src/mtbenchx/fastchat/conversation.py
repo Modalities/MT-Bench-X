@@ -17,6 +17,7 @@ If you have any changes in mind, please contribute back so the community can ben
 
 import base64
 import dataclasses
+from datetime import datetime
 import os
 from enum import IntEnum, auto
 from io import BytesIO
@@ -52,6 +53,7 @@ class SeparatorStyle(IntEnum):
     GEMMA = auto()
     CLLM = auto()
     DEFAULT = auto()
+    MISTRALv3 = auto()
 
 
 IMAGE_PLACEHOLDER_STR = "$$<image>$$"
@@ -168,6 +170,22 @@ class Conversation:
                 ret = system_prompt
             else:
                 ret = "[INST] "
+            for i, (role, message) in enumerate(self.messages):
+                tag = self.roles[i % 2]
+                if message:
+                    if i == 0:
+                        ret += message + " "
+                    else:
+                        ret += tag + " " + message + seps[i % 2]
+                else:
+                    ret += tag
+            return ret
+        elif self.sep_style == SeparatorStyle.MISTRALv3:
+            seps = [self.sep, self.sep2]
+            if self.system_message:
+                ret = system_prompt
+            else:
+                ret = "<s>[INST] "
             for i, (role, message) in enumerate(self.messages):
                 tag = self.roles[i % 2]
                 if message:
@@ -1280,6 +1298,21 @@ register_conv_template(
     )
 )
 
+register_conv_template(
+    Conversation(
+        name="salamandra-7b-instruct",
+        system_template="""{system_message}""",
+        system_message=f"""<|im_start|> assistant
+I am Salamandra, an AI language model developed at the Barcelona Supercomputing Centre (BSC) by the Language Technologies Unit. My knowledge base was last updated on August 2023. Today Date: {datetime.today().strftime('%Y-%m-%d')}
+Soy Salamandra, un modelo lingüístico de IA desarrollado en el Barcelona Supercomputing Centre (BSC) por la Language Technologies Unit. Mi base de conocimientos se actualizó por última vez en agosto de 2023.
+Soc Salamandra, un model de llenguatge d'IA desenvolupat al Barcelona Supercomputing Centre (BSC) per la Language Technologies Unit. La meva base de coneixement es va actualitzar per última vegada l'agost de 2023.""",
+        roles=("<|im_start|> user", "<|im_start|> assistant"),
+        sep_style=SeparatorStyle.CHATML,
+        sep="<|im_end|>",
+        stop_token_ids=[2, 5],
+    )
+)
+
 # Bard default template
 # Reference: https://github.com/google/generative-ai-python/blob/9c99bcb474a991a97a2e7d62fcdb52db7ce40729/google/generativeai/discuss.py#L150
 #            https://github.com/google/generative-ai-python/blob/9c99bcb474a991a97a2e7d62fcdb52db7ce40729/google/generativeai/discuss.py#L40
@@ -1512,9 +1545,9 @@ register_conv_template(
 register_conv_template(
     Conversation(
         name="mistral",
-        system_template="[INST] {system_message}\n",
+        system_template="<s>[INST] {system_message}\n",
         roles=("[INST]", "[/INST]"),
-        sep_style=SeparatorStyle.LLAMA2,
+        sep_style=SeparatorStyle.MISTRALv3,
         sep=" ",
         sep2="</s>",
     )
@@ -1546,6 +1579,41 @@ register_conv_template(
         sep="",
         stop_str="<|eot_id|>",
         stop_token_ids=[128001, 128009],
+    )
+)
+
+register_conv_template(
+    Conversation(
+        name="meta-llama-3.1",
+        system_message=(
+            """Cutting Knowledge Date: December 2023
+Today Date: {{currentDateTimev2}}"""
+        ),
+        roles=("user", "assistant"),
+        sep_style=SeparatorStyle.DEFAULT,
+        sep=None,
+    )
+)
+
+register_conv_template(
+    Conversation(
+        name="meta-llama-3.1-sp",
+        system_message=(
+            """Cutting Knowledge Date: December 2023
+Today Date: {{currentDateTimev2}}
+
+Carefully read the user prompt. Your responses are comprehensive and easy to understand. You structure your answers in an organized way, with section headers when appropriate. You use consistent formatting in your responses. You follow user instructions. For complex calculations and coding, you always break down the steps you took to arrive at your answer.
+
+Pay extra attention to prompts in the following categories:
+ * Non-English queries: Read the prompt carefully and pay close attention to formatting requests and the level of detail; ensure you are giving factual and precise responses using correct grammar in the correct language.
+ * Coding queries: You prioritize code organization and documentation. Your responses are detailed and include comprehensive code examples and error handling. Include comments to explain the code's purpose and behavior. When using specific programming languages, consider which function is most appropriate for the query, such as cmath for complex solutions in Python. Check for errors.
+ * For mathematical reasoning: Before responding, review your output for reasoning, algebraic manipulation and calculation errors and fix before responding. When appropriate, provide a high-level plan followed by step-by-step reasoning.
+
+Remember your instructions."""
+        ),
+        roles=("user", "assistant"),
+        sep_style=SeparatorStyle.DEFAULT,
+        sep=None,
     )
 )
 
