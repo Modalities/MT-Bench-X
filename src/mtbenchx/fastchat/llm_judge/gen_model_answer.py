@@ -193,7 +193,7 @@ def get_model_answers(
 
                     output = tokenizer.decode(
                         output_ids,
-                        spaces_between_special_tokens=False,
+                        spaces_between_special_tokens="Mistral-7B-Instruct-v0.3" in model_path,
                     )
                     if conv.stop_str and isinstance(conv.stop_str, list):
                         stop_str_indices = sorted([output.find(stop_str) for stop_str in conv.stop_str if output.find(stop_str) > 0])
@@ -208,8 +208,11 @@ def get_model_answers(
                                 output = output.replace(special_tok, "")
                         else:
                             output = output.replace(special_token, "")
-                    output = output.replace(conv.sep, "")
-                    if conv.sep2 is not None:
+
+                    # TODO remove and use tokenizer.special_tokens_map instead!
+                    if conv.sep is not None and conv.sep != " ":
+                        output = output.replace(conv.sep, "")
+                    if conv.sep2 is not None and conv.sep2 != " ":
                         output = output.replace(conv.sep2, "")
                     output = output.strip()
 

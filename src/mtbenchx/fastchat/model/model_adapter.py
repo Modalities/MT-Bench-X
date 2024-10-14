@@ -2326,6 +2326,25 @@ class Llama31Adapter(BaseModelAdapter):
             return get_conv_template("meta-llama-3.1-sp")
         return get_conv_template("meta-llama-3.1")
 
+class SalamandraAdapter(BaseModelAdapter):
+    """The model adapter for Salamandra"""
+
+    def match(self, model_path: str):
+        return "salamandra" in model_path.lower()
+
+    def get_default_conv_template(self, model_path: str) -> Conversation:
+        return get_conv_template("salamandra-7b-instruct")
+
+    def load_model(self, model_path: str, from_pretrained_kwargs: dict):
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            torch_dtype=torch.bfloat16,
+        )
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_path,
+        )
+        return model, tokenizer
+
 class OpenGPTXAdapter(BaseModelAdapter):
     """The model adapter for OpenGPTX Models"""
 
@@ -2405,7 +2424,6 @@ register_model_adapter(PythiaAdapter)
 register_model_adapter(InternLMChatAdapter)
 register_model_adapter(StarChatAdapter)
 register_model_adapter(Llama2Adapter)
-register_model_adapter(Llama3Adapter)
 register_model_adapter(CuteGPTAdapter)
 register_model_adapter(OpenOrcaAdapter)
 register_model_adapter(DolphinAdapter)
@@ -2454,8 +2472,10 @@ register_model_adapter(YandexGPTAdapter)
 register_model_adapter(CllmAdapter)
 register_model_adapter(RekaAdapter)
 register_model_adapter(SmaugChatAdapter)
-register_model_adapter(OpenGPTXAdapter)
 register_model_adapter(Llama31Adapter)
+register_model_adapter(Llama3Adapter)
+register_model_adapter(SalamandraAdapter)
+register_model_adapter(OpenGPTXAdapter)
 
 # After all adapters, try the default base adapter.
 register_model_adapter(BaseModelAdapter)
