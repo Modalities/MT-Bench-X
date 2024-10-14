@@ -74,6 +74,7 @@ class MatchSingle:
     judge: Judge
     ref_answer: dict = None
     multi_turn: bool = False
+    output_file: str = None
 
 
 @dataclasses.dataclass
@@ -188,12 +189,13 @@ def run_judge_single(question, answer, judge, ref_answer, multi_turn=False):
     return rating, user_prompt, judgment
 
 
-def play_a_match_single(match: MatchSingle, output_file: str):
-    question, model, answer, judge, ref_answer, multi_turn = (
+def play_a_match_single(match: MatchSingle):
+    question, model, answer, judge, output_file, ref_answer, multi_turn = (
         match.question,
         match.model,
         match.answer,
         match.judge,
+        match.output_file,
         match.ref_answer,
         match.multi_turn,
     )

@@ -160,3 +160,4 @@ pyenv*
 noteboks/*
 
 tests/tmp/*
+results

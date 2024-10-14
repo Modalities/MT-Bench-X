@@ -21,7 +21,7 @@ def collect_model_specific_judgments(model_id: str, save_path: str | None = None
     judge = ""
     categories = []
     for eval_language in ["EN", "DE", "FR", "IT", "ES"]:
-        file_path = Path(f"data/mt_bench_{eval_language}/model_judgment/{judgment_filename}")
+        file_path = Path(f"results/{model_id}/mt_bench_{eval_language}/model_judgment/{judgment_filename}")
         if not file_path.exists():
             continue
         with file_path.open() as f:
