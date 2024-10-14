@@ -76,6 +76,7 @@ def setup_parser():
     )
     parser.add_argument("--judge-model", type=str, default="gpt-4")
     parser.add_argument("--parallel", type=int, default=1, help="The number of concurrent API calls.")
+    parser.add_argument("--quiet", action="store_true", help="Do not ask to start OpenAI evaluation -  a step which induces costs.")
     args = parser.parse_args()
     print("Arguments:")
     print(json.dumps(vars(args), indent=4))
@@ -92,10 +93,10 @@ def main():
     model_id = f"{args.model_id}-{args.model_id_postfix}" if args.model_id_postfix != "" else f"{args.model_id}"
     bench_names = [f"mt_bench_{eval_language}" for eval_language in args.eval_languages]
     gen_mulilingual_model_answers(args=args, bench_names=bench_names, model_id=model_id)
-    for bench_name in bench_names:
-        run_judgment_jobs(args, bench_name, model_id)
+    run_judgment_jobs(args, bench_names, model_id)
+
     if args.save_path is None:
-        args.save_path = f"data/{model_id}_judgments.json"
+        args.save_path = f"results/{model_id}/{model_id}_judgments.json"
     collect_model_specific_judgments(model_id, save_path=args.save_path)
 
 

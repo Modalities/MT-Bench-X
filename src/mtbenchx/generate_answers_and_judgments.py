@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List
 
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 from mtbenchx.evalset import EvalSet
@@ -30,7 +31,7 @@ def gen_mulilingual_model_answers(args, bench_names: List[str], model_id: str):
     eval_sets = []
     print("Will create model answers for:")
     for bench_name in bench_names:
-        answer_file = Path(f"data/{bench_name}/model_answer/{model_id}.jsonl")
+        answer_file = Path(f"results/{model_id}/{bench_name}/model_answer/{model_id}.jsonl")
         if not answer_file.exists():
             answer_file.parent.mkdir(parents=True, exist_ok=True)
             answer_file.touch()
@@ -72,10 +73,41 @@ def reorg_answer_file(answer_file):
             fout.write(answers[qid])
 
 
-def run_judgment_jobs(args, bench_name, model_id):
+def run_judgment_jobs(args, bench_names, model_id):
     """Adaped from mtbenchx.fastchat/llm_judge/gen_judgment.py"""
+    matches = []
+    match_stats = []
+    for bench_name in bench_names:
+        bench_matches, match_stat = _prepare_judgement_run(args, bench_name, model_id)
+        matches += bench_matches
+        match_stats.append(match_stat)
+
+    # Show match stats and prompt enter to continue
+    print("Stats:")
+    print(pd.DataFrame.from_dict(match_stats).to_string())
+    if not args.quiet:
+        input("Press Enter to confirm...")
+
+    # Play matches
+    if args.parallel == 1:
+        for match in tqdm(matches):
+            play_a_match_single(match)
+    else:
+
+        def play_a_match_wrapper(match):
+            play_a_match_single(match)
+
+        np.random.seed(0)
+        np.random.shuffle(matches)
+
+        with ThreadPoolExecutor(args.parallel) as executor:
+            for match in tqdm(executor.map(play_a_match_wrapper, matches), total=len(matches)):
+                pass
+        executor.shutdown(wait=True)
+
+def _prepare_judgement_run(args, bench_name, model_id) -> tuple[list, dict]:
     question_file = f"data/{bench_name}/question.jsonl"
-    answer_dir = f"data/{bench_name}/model_answer"
+    answer_dir = f"results/{model_id}/{bench_name}/model_answer"
     ref_answer_dir = f"data/{bench_name}/reference_answer"
 
     # Load questions
@@ -92,7 +124,8 @@ def run_judgment_jobs(args, bench_name, model_id):
     baseline_model = None
     judges = make_judge_single(args.judge_model, judge_prompts)
 
-    output_file = f"data/{bench_name}/model_judgment/{args.judge_model}_single.jsonl"
+    output_file = f"results/{model_id}/{bench_name}/model_judgment/{args.judge_model}_single.jsonl"
+    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
     print(f"Will use default result file {Path(output_file).absolute()}")
     models = [model_id]
     check_data(questions, model_answers, ref_answers, models, judges)
@@ -102,12 +135,13 @@ def run_judgment_jobs(args, bench_name, model_id):
 
     # Make matches
     matches = []
-    matches += make_match_single(question_default, models, model_answers, judges["default"], baseline_model)
+    matches += make_match_single(question_default, models, model_answers, judges["default"], output_file, baseline_model)
     matches += make_match_single(
         question_math,
         models,
         model_answers,
         judges["math"],
+        output_file,
         baseline_model,
         ref_answers,
     )
@@ -116,6 +150,7 @@ def run_judgment_jobs(args, bench_name, model_id):
         models,
         model_answers,
         judges["default-mt"],
+        output_file,
         baseline_model,
         multi_turn=True,
     )
@@ -124,6 +159,7 @@ def run_judgment_jobs(args, bench_name, model_id):
         models,
         model_answers,
         judges["math-mt"],
+        output_file,
         baseline_model,
         ref_answers,
         multi_turn=True,
@@ -135,26 +171,4 @@ def run_judgment_jobs(args, bench_name, model_id):
     match_stat["total_num_questions"] = len(questions)
     match_stat["total_num_matches"] = len(matches)
     match_stat["output_path"] = output_file
-
-    # Show match stats and prompt enter to continue
-    print("Stats:")
-    print(json.dumps(match_stat, indent=4, ensure_ascii=False))
-    input("Press Enter to confirm...")
-
-    output_file = match_stat["output_path"]
-    # Play matches
-    if args.parallel == 1:
-        for match in tqdm(matches):
-            play_a_match_single(match, output_file=output_file)
-    else:
-
-        def play_a_match_wrapper(match):
-            play_a_match_single(match, output_file=output_file)
-
-        np.random.seed(0)
-        np.random.shuffle(matches)
-
-        with ThreadPoolExecutor(args.parallel) as executor:
-            for match in tqdm(executor.map(play_a_match_wrapper, matches), total=len(matches)):
-                pass
-        executor.shutdown(wait=True)
+    return matches, match_stat

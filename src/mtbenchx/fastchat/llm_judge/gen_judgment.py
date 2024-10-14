@@ -117,6 +117,7 @@ def make_match_single(
     models,
     model_answers,
     judge,
+    output_file,
     baseline_model=None,
     ref_answers=None,
     multi_turn=False,
@@ -131,9 +132,9 @@ def make_match_single(
             a = model_answers[m][q_id]
             if ref_answers is not None:
                 ref = ref_answers[judge.model_name][q_id]
-                matches.append(MatchSingle(dict(q), m, a, judge, ref_answer=ref, multi_turn=multi_turn))
+                matches.append(MatchSingle(dict(q), m, a, judge, ref_answer=ref, multi_turn=multi_turn, output_file=output_file))
             else:
-                matches.append(MatchSingle(dict(q), m, a, judge, multi_turn=multi_turn))
+                matches.append(MatchSingle(dict(q), m, a, judge, multi_turn=multi_turn, output_file=output_file))
     return matches
 
 

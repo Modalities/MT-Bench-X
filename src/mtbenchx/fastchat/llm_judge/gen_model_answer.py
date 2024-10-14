@@ -156,9 +156,9 @@ def get_model_answers(
                 qs = question["turns"][j]
                 conv.append_message(conv.roles[0], qs)
                 conv.append_message(conv.roles[1], None)
-                if language_code in "EN DE FR IT ES":
+                try:
                     prompt = conv.get_prompt_by_language_code(language_code)
-                else:
+                except Exception:
                     warnings.warn(f"Language code {language_code} not supported. Use default language code 'EN'.")
                     prompt = conv.get_prompt()
                 input_ids = tokenizer([prompt]).input_ids
@@ -208,7 +208,9 @@ def get_model_answers(
                                 output = output.replace(special_tok, "")
                         else:
                             output = output.replace(special_token, "")
-                    output = output.replace(conv.sep, "").replace(conv.sep2, "")
+                    output = output.replace(conv.sep, "")
+                    if conv.sep2 is not None:
+                        output = output.replace(conv.sep2, "")
                     output = output.strip()
 
                     if conv.name == "xgen" and output.startswith("Assistant:"):
@@ -243,8 +245,11 @@ def get_model_answers(
 
 
 def get_stop_token_ids_and_eos_token_id(conv_template, tokenizer) -> Tuple[List[List[int]], int]:
-    turn_sep_token_ids = tokenize_text(tokenizer, conv_template.sep2)
-    stop_token_ids = [turn_sep_token_ids]
+    stop_token_ids = []
+
+    if conv_template.sep2 is not None:
+        turn_sep_token_ids = tokenize_text(tokenizer, conv_template.sep2)
+        stop_token_ids.append(turn_sep_token_ids)
 
     if conv_template.stop_str is not None:
         stop_strings = [conv_template.stop_str] if isinstance(conv_template.stop_str, str) else conv_template.stop_str
