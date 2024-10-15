@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 import plotly.subplots as sp
 from matplotlib import pyplot as plt
 from plotly.subplots import make_subplots
-
+import hashlib
 
 def extract_key_info(key: str):
     fields = key.split("_")
@@ -116,8 +116,12 @@ def multi_model_radar_plot(df):
     df = df.groupby(["Model", "Category", "Language"]).score.mean().reset_index().copy()
     df = pd.concat([df, cross_lingual_avg], ignore_index=True)
     languages = df["Language"].unique()
-    model_abbrevs = [model_name.split("-")[0] for model_name in df["Model"].unique()]
-    model_str = "_".join(model_abbrevs).replace(" ", "_").replace(".", "")
+    model_names = df["Model"].unique()
+    model_names_str = "_".join(model_names)
+    hash_object = hashlib.sha256(model_names_str.encode())
+    model_names_hash = hash_object.hexdigest()[-7:]
+    model_abbrevs = [model_name.split("-")[0] for model_name in model_names]
+    model_str = f"{model_names_hash}_" + "_".join(model_abbrevs).replace(" ", "_").replace(".", "")
 
     out_path = Path(f"results/multi/{model_str}/")
     out_path.mkdir(exist_ok=True, parents=True)
